@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using WikiUtil.Remix;
@@ -7,17 +8,19 @@ namespace WikiUtil
 {
     public static class ToolDatabase
     {
-        public class ToolType : ExtEnum<ToolType>
+        public class ToolType(string value, bool register = false) : ExtEnum<ToolType>(value, register)
         {
-            public ToolType(string value, bool register = false) : base(value, register)
-            {
-            }
-
             public static IEnumerable<ToolType> Values => values.entries.Select(x => new ToolType(x, false));
         }
 
         public struct KeyboardData
         {
+            public KeyboardData(KeyCode keyCode)
+            {
+                this.keyCode = keyCode;
+                ctrl = alt = shift = false;
+            }
+
             public KeyCode keyCode;
             public bool ctrl;
             public bool alt;
@@ -52,6 +55,13 @@ namespace WikiUtil
             return _toolOrder;
         }
 
+        public static ITool GetToolFor(ToolType toolType)
+        {
+            return _toolOrder.FirstOrDefault(x => x.Key == toolType).Value;
+        }
+
+        public static bool ToolEnabled(ToolType toolType) => RemixMenu.EnabledConfig.TryGetValue(toolType, out var enabled) && enabled.Value;
+
         internal static void RegenerateToolOrder()
         {
             _toolOrder.OrderByDescending(ToolOrdering);
@@ -60,8 +70,9 @@ namespace WikiUtil
 
             static int ToolOrdering(KeyValuePair<ToolType, ITool> item)
             {
+                // This prioritizes keybinds with ctrl, alt, and/or shift from being run before versions of the keybinds that don't run with them
                 var kb = RemixMenu.GetKeybindFor(item.Key);
-                return kb is not null ? B2I(kb.Value.ctrl) + B2I(kb.Value.shift) + B2I(kb.Value.alt) + B2I(kb.Value.keyCode != KeyCode.None) : 0;
+                return kb is not null ? B2I(kb.Value.ctrl) + B2I(kb.Value.shift) + B2I(kb.Value.alt) + B2I(kb.Value.keyCode != KeyCode.None) * 3 : -1;
             }
         }
 
@@ -78,6 +89,19 @@ namespace WikiUtil
                 _toolOrder.Add(new KeyValuePair<ToolType, ITool>(type, tool));
                 RegenerateToolOrder();
             }
+        }
+
+        /// <summary>
+        /// Gets path to specified location in user's selected work folder.
+        /// </summary>
+        /// <param name="paths">The relative parts of the path. Will automatically combine with the proper path separating character.</param>
+        /// <returns>The full path starting from the user's selected work folder</returns>
+        public static string GetPathTo(params string[] paths)
+        {
+            var path = Path.Combine(RemixMenu.DirectoryConfig, Path.Combine(paths));
+            var dir = Path.GetDirectoryName(path);
+            Directory.CreateDirectory(dir);
+            return path;
         }
     }
 }

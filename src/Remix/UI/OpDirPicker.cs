@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using MapExporterNew.Tabs.UI;
 using Menu.Remix.MixedUI;
 using UnityEngine;
 
@@ -15,41 +14,46 @@ namespace WikiUtil.Remix.UI
     {
         private bool dirty = true;
 
-        public DirectoryInfo CurrentDir { get; private set; } = null;
-
-        public bool ValidDir => CurrentDir != null;
-
-        public OpDirPicker(OpTab tab, string startingDir = null) : base(tab, 0f, false, true)
+        private DirectoryInfo _CurrentDirBackingField = null;
+        public DirectoryInfo CurrentDir
         {
-            if (startingDir != null)
+            get
             {
-                var info = new DirectoryInfo(startingDir);
-                CurrentDir = info.Exists ? info : null;
+                return _CurrentDirBackingField;
+            }
+            set
+            {
+                _CurrentDirBackingField = value;
+                RemixMenu.DirectoryConfig = value?.FullName ?? "C:\\";
             }
         }
 
-        public OpDirPicker(Vector2 pos, Vector2 size, string startingDir = null) : base(pos, size, 0f, false, true, true)
+        public bool ValidDir => CurrentDir != null;
+
+        public OpDirPicker(OpTab tab) : base(tab, 0f, false, true)
+        {
+            _CurrentDirBackingField = new DirectoryInfo(RemixMenu.DirectoryConfig);
+        }
+
+        public OpDirPicker(Vector2 pos, Vector2 size) : base(pos, size, 0f, false, true, true)
         {
             this.size = new Vector2(Mathf.Max(160f, size.x), size.y);
-            if (startingDir != null)
-            {
-                var info = new DirectoryInfo(startingDir);
-                CurrentDir = info.Exists ? info : null;
-            }
+            _CurrentDirBackingField = new DirectoryInfo(RemixMenu.DirectoryConfig);
         }
 
         public override void Update()
         {
             base.Update();
 
-            if (dirty && tab != null)
+            if (dirty)
             {
                 dirty = false;
 
                 // Clear out old items
                 foreach (var item in items)
                 {
-                    tab._RemoveItem(item);
+                    item.Deactivate();
+                    item.tab._RemoveItem(item);
                 }
                 items.Clear();
                 SetContentSize(0f);
@@ -59,15 +63,15 @@ namespace WikiUtil.Remix.UI
 
                 float y = size.y - GAP - 24f;
                 float height = GAP * 4 + 26f;
-                float fullWidth = size.x - 2 * GAP - BaseTab.SCROLLBAR_WIDTH;
+                float fullWidth = size.x - 2 * GAP - 20f;
 
                 var upButton = new OpSimpleImageButton(new Vector2(GAP, y), new Vector2(24f, 24f), "Menu_Symbol_Arrow");
                 var refreshButton = new OpSimpleImageButton(new Vector2(GAP * 2 + 24f, y), new Vector2(24f, 24f), "Menu_Symbol_Repeats");
-                var doneButton = new OpSimpleImageButton(new Vector2(size.x - GAP - 25f - BaseTab.SCROLLBAR_WIDTH, y), new Vector2(24f, 24f), "Menu_Symbol_CheckBox");
+                var doneButton = new OpSimpleImageButton(new Vector2(size.x - GAP - 25f - 20f, y), new Vector2(24f, 24f), "Menu_Symbol_CheckBox");
                 var pathInput = new OpTextBox(
-                    OIUtil.CosmeticBind<string>(CurrentDir?.FullName ?? "\\"),
+                    new Configurable<string>(RemixMenu.instance, null, CurrentDir?.FullName ?? "\\", null),
                     new Vector2(GAP * 3 + 24f * 2, y),
-                    size.x - GAP * 5 - 24f * 3 - BaseTab.SCROLLBAR_WIDTH)
+                    size.x - GAP * 5 - 24f * 3 - 20f)
                     { maxLength = 65535 };
 
                 upButton.OnClick += UpButton_OnClick;
