@@ -28,6 +28,7 @@ sealed class Plugin : BaseUnityPlugin
 
         // Register our stuff
         ToolDatabase.RegisterTool(new ToolDatabase.ToolType("Screenshotter", true), new ScreenshotterTool(), new ToolDatabase.KeyboardData(KeyCode.F12));
+        ToolDatabase.RegisterTool(new ToolDatabase.ToolType("Icon Grabber", true), new IconsTool(), new ToolDatabase.KeyboardData(KeyCode.I) { ctrl = true });
     }
 
     private void RegisterRemix(On.RainWorld.orig_OnModsInit orig, RainWorld self)

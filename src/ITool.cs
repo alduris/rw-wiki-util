@@ -10,7 +10,7 @@
         /// Your registered keybind is checked automatically, so this defines if it should only run under a specific circumstance.
         /// </summary>
         /// <param name="rainWorld">The current instance of <see cref="RainWorld"/>.</param>
-        public bool ShouldIRun(RainWorld world);
+        public bool ShouldIRun(RainWorld rainWorld);
 
         /// <summary>
         /// Defines what happens when the tool is run (when its keybind is pressed and ShouldIRun returns true).
