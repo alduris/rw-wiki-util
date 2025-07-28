@@ -10,7 +10,7 @@ using IconData = (string type, int data);
 namespace WikiUtil.BuiltIn
 {
 
-    internal class IconsTool : ToggleTool, IHaveGUI
+    internal class IconsTool : GUIToggleTool
     {
         private readonly Dictionary<IconData, Texture2D> creatureIcons = [];
         private readonly Dictionary<IconData, Texture2D> objectIcons = [];
@@ -38,21 +38,19 @@ namespace WikiUtil.BuiltIn
             }
         }
 
-        public override void ToggleUpdate(RainWorld rainWorld) { }
-
         private Vector2 pickerOffset;
         private int creaturePicker = 0;
         private int objectPicker = -1;
         private string dataString = "0";
 
-        public bool ShowWindow => toggled;
+        public override bool ShowWindow => toggled;
 
         private const float leftWidth = 300f;
         private const float rightWidth = 150f;
         private const float contentMargin = 10f;
-        public Rect WindowSize { get; set; } = new Rect(100f, 100f, 3 * contentMargin + leftWidth + rightWidth, 540f);
+        public override Rect WindowSize { get; set; } = new Rect(100f, 100f, 3 * contentMargin + leftWidth + rightWidth, 540f);
 
-        public void OnGUI(RainWorld rainWorld)
+        public override void OnGUI(RainWorld rainWorld)
         {
             int creatureCount = creatureNames.Length;
             int objectCount = objectNames.Length;
@@ -108,7 +106,7 @@ namespace WikiUtil.BuiltIn
                 }
 
                 Vector2 size = new Vector2(iconTexture.width, iconTexture.height) * 2f;
-                GUI.Label(new Rect((new Vector2(rightStart + rightWidth / 2f, 250f) - size / 2f).Round(), size), iconTexture);
+                GUI.Label(new Rect((new Vector2(rightStart + rightWidth / 2f, 250f) - size / 4f).Round(), size), iconTexture);
 
                 if (creaturePicker > -1 || objectPicker > -1)
                 {
