@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using WikiUtil.Tools;
@@ -46,7 +47,7 @@ namespace WikiUtil.BuiltIn
 
         public bool ShowWindow => toggled;
 
-        private const float leftWidth = 400f;
+        private const float leftWidth = 300f;
         private const float rightWidth = 150f;
         private const float contentMargin = 10f;
         public Rect WindowSize { get; set; } = new Rect(100f, 100f, 3 * contentMargin + leftWidth + rightWidth, 540f);
@@ -108,6 +109,16 @@ namespace WikiUtil.BuiltIn
 
                 Vector2 size = new Vector2(iconTexture.width, iconTexture.height) * 2f;
                 GUI.Label(new Rect((new Vector2(rightStart + rightWidth / 2f, 250f) - size / 2f).Round(), size), iconTexture);
+
+                if (creaturePicker > -1 || objectPicker > -1)
+                {
+                    string iconName = (creaturePicker > -1) ? creatureNames[creaturePicker] : objectNames[objectPicker];
+                    if (GUI.Button(new Rect(rightStart, 500f, rightWidth, 20f), "Download"))
+                    {
+                        string fullpath = ToolDatabase.GetPathTo("icons", Util.SafeString(iconName) + ".png");
+                        File.WriteAllBytes(fullpath, iconTexture.EncodeToPNG());
+                    }
+                }
             }
         }
     }

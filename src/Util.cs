@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 namespace WikiUtil
@@ -15,5 +16,7 @@ namespace WikiUtil
         {
             return new Vector2(Mathf.Round(vector.x), Mathf.Round(vector.y));
         }
+
+        public static string SafeString(string str) => Regex.Replace(str, "[^\\w\\d\\-]", "_"); // guaranteed to be able to make into a file name
     }
 }
