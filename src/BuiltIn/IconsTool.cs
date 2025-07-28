@@ -29,31 +29,12 @@ namespace WikiUtil.BuiltIn
             creatureNames = [.. CreatureTemplate.Type.values.entries.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)];
             objectNames = [.. AbstractPhysicalObject.AbstractObjectType.values.entries.OrderBy(x => x, StringComparer.OrdinalIgnoreCase)];
 
-            // Load default icons
-            foreach (var name in creatureNames)
-            {
-                if (!creatureIcons.ContainsKey((name, 0)))
-                {
-                    creatureIcons[(name, 0)] = CreatureIcon(name, 0);
-                }
-            }
-            foreach (var name in objectNames)
-            {
-                if (!objectIcons.ContainsKey((name, 0)))
-                {
-                    objectIcons[(name, 0)] = ItemIcon(name, 0);
-                }
-            }
-
+            // Cache default texture
             if (defaultTexture == null)
             {
                 defaultTexture = GetElementFromAtlas(Futile.atlasManager.GetElementWithName("Symbol_Unknown"));
                 Iconify(defaultTexture);
             }
-
-            // Sort
-            Array.Sort(creatureNames);
-            Array.Sort(objectNames);
         }
 
         public override void ToggleUpdate(RainWorld rainWorld) { }
@@ -65,11 +46,13 @@ namespace WikiUtil.BuiltIn
 
         public bool ShowWindow => toggled;
 
-        public Rect WindowSize { get; set; } = new Rect(100f, 100f, 300f, 540f);
+        private const float leftWidth = 400f;
+        private const float rightWidth = 150f;
+        private const float contentMargin = 10f;
+        public Rect WindowSize { get; set; } = new Rect(100f, 100f, 3 * contentMargin + leftWidth + rightWidth, 540f);
 
         public void OnGUI(RainWorld rainWorld)
         {
-            const float sboxWidth = 400f;
             int creatureCount = creatureNames.Length;
             int objectCount = objectNames.Length;
 
@@ -78,14 +61,14 @@ namespace WikiUtil.BuiltIn
 
             // Define scrollbox
             pickerOffset = GUI.BeginScrollView(
-                new Rect(10f, 20f, sboxWidth, 500f),
+                new Rect(contentMargin, 20f, leftWidth, 500f),
                 pickerOffset,
-                new Rect(0f, 0f, sboxWidth, 40f + 20f * (creatureRows + objectRows)),
+                new Rect(0f, 0f, leftWidth - 20f, 60f + 24f * (creatureRows + objectRows)),
                 false, true);
 
             // Creatures
-            GUI.Label(new Rect(0f, 4f, sboxWidth, 20f), "CREATURES");
-            creaturePicker = GUI.SelectionGrid(new Rect(0f, 28f, sboxWidth, creatureRows * 24f - 4f), creaturePicker, creatureNames, 2);
+            GUI.Label(new Rect(0f, 0f, leftWidth, 20f), "CREATURES");
+            creaturePicker = GUI.SelectionGrid(new Rect(0f, 24f, leftWidth - 20f, creatureRows * 24f - 4f), creaturePicker, creatureNames, 2);
 
             if (creaturePicker > -1 && objectPicker > -1)
             {
@@ -95,7 +78,7 @@ namespace WikiUtil.BuiltIn
             // Objects
             float objectStartY = 24f * creatureRows + 28f;
             GUI.Label(new Rect(0f, objectStartY, 124f, 20f), "OBJECTS");
-            objectPicker = GUI.SelectionGrid(new Rect(0f, objectStartY + 24f, sboxWidth, objectRows * 24f - 4f), objectPicker, objectNames, 2);
+            objectPicker = GUI.SelectionGrid(new Rect(0f, objectStartY + 24f, leftWidth - 20f, objectRows * 24f - 4f), objectPicker, objectNames, 2);
 
             if (objectPicker > -1 && creaturePicker > -1)
             {
@@ -106,22 +89,25 @@ namespace WikiUtil.BuiltIn
             GUI.EndScrollView();
 
             // Now for the other parts of it
-            GUI.Label(new Rect(160f, 20f, 130f, 20f), "Data: (enter integer)");
-            dataString = GUI.TextField(new Rect(160f, 44f, 130f, 20f), dataString, 11);
+            const float rightStart = 2 * contentMargin + leftWidth;
+            GUI.Label(new Rect(rightStart, 20f, rightWidth, 20f), "Data: (enter integer)");
+            dataString = GUI.TextField(new Rect(rightStart, 44f, rightWidth, 20f), dataString, 11);
             if (int.TryParse(dataString, out int dataInt))
             {
                 Texture2D iconTexture = defaultTexture;
                 if (creaturePicker > -1 && !creatureIcons.TryGetValue((creatureNames[creaturePicker], dataInt), out iconTexture))
                 {
                     iconTexture = CreatureIcon(creatureNames[creaturePicker], dataInt);
+                    creatureIcons[(creatureNames[creaturePicker], dataInt)] = iconTexture;
                 }
                 else if (objectPicker > -1 && !objectIcons.TryGetValue((objectNames[objectPicker], dataInt), out iconTexture))
                 {
                     iconTexture = ItemIcon(objectNames[objectPicker], dataInt);
+                    objectIcons[(objectNames[objectPicker], dataInt)] = iconTexture;
                 }
 
                 Vector2 size = new Vector2(iconTexture.width, iconTexture.height) * 2f;
-                GUI.Label(new Rect((new Vector2(225f, 250f) - size / 2f).Round(), size), iconTexture);
+                GUI.Label(new Rect((new Vector2(rightStart + rightWidth / 2f, 250f) - size / 2f).Round(), size), iconTexture);
             }
         }
     }
