@@ -1,9 +1,9 @@
-﻿using BepInEx;
-using BepInEx.Logging;
+﻿using System;
 using System.Security.Permissions;
-using UnityEngine;
+using BepInEx;
+using BepInEx.Logging;
+using WikiUtil.BuiltIn;
 using WikiUtil.Remix;
-using WikiUtil.Tools;
 
 // Allows access to private members
 #pragma warning disable CS0618
@@ -19,7 +19,7 @@ sealed class Plugin : BaseUnityPlugin
     private bool _isInit;
     private static RemixMenu _remixMenu;
 
-    public void OnEnable()
+    private void OnEnable()
     {
         Logger = base.Logger;
         _remixMenu ??= new RemixMenu();
@@ -27,8 +27,17 @@ sealed class Plugin : BaseUnityPlugin
         On.RainWorld.Update += ToolRunner;
 
         // Register our stuff
-        ToolDatabase.RegisterTool(new ToolDatabase.ToolType("Screenshotter", true), new ScreenshotterTool(), new ToolDatabase.KeyboardData(KeyCode.F12));
-        ToolDatabase.RegisterTool(new ToolDatabase.ToolType("Icon Grabber", true), new IconsTool(), new ToolDatabase.KeyboardData(KeyCode.I) { ctrl = true });
+        try
+        {
+            ToolDatabase.RegisterTool(new ScreenshotterTool());
+            ToolDatabase.RegisterTool(new IconsTool());
+            // encrypted file reader
+            // creature/object reader in a region
+        }
+        catch (Exception e)
+        {
+            Logger.LogError(e);
+        }
     }
 
     private void RegisterRemix(On.RainWorld.orig_OnModsInit orig, RainWorld self)
@@ -44,21 +53,20 @@ sealed class Plugin : BaseUnityPlugin
     {
         if (self.processManager != null)
         {
-            var currProc = self.processManager.currentMainLoop;
-            bool regularUpdate = currProc != null && (currProc.myTimeStacker + currProc.framesPerSecond * Time.deltaTime) > 1f;
-
-            foreach (var (type, tool) in ToolDatabase.GetToolOrder())
+            bool skipOrig = ToolDatabase.RunUpdateLoop(self);
+            if (!skipOrig)
             {
-                if (ToolDatabase.CheckKeybindPressedFor(type) && tool.ShouldIRun(self))
-                {
-                    tool.Run(self, regularUpdate);
-                }
+                orig(self);
             }
-            orig(self);
         }
         else
         {
             orig(self);
         }
+    }
+
+    private void OnGUI()
+    {
+        ToolDatabase.RunGUI();
     }
 }

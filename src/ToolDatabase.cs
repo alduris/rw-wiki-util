@@ -1,95 +1,85 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using RWCustom;
 using UnityEngine;
 using WikiUtil.Remix;
+using WikiUtil.Tools;
 
 namespace WikiUtil
 {
     public static class ToolDatabase
     {
-        public class ToolType(string value, bool register = false) : ExtEnum<ToolType>(value, register)
+        private struct ToolInfo
         {
-            public static IEnumerable<ToolType> Values => values.entries.Select(x => new ToolType(x, false));
+            public Keybind keybind;
+            public bool enabled;
         }
 
-        public struct KeyboardData
+        private static int windowIDCounter = 0;
+        private static readonly List<Tool> tools = [];
+        private static readonly Dictionary<string, ToolInfo> toolInfos = [];
+        private static readonly Dictionary<IHaveGUI, int> guiToID = [];
+        private static readonly Dictionary<int, IHaveGUI> idToGUI = [];
+
+        public static void RegisterTool(Tool tool)
         {
-            public KeyboardData(KeyCode keyCode)
+            tools.Add(tool);
+            if (!toolInfos.ContainsKey(tool.id))
             {
-                this.keyCode = keyCode;
-                ctrl = alt = shift = false;
+                toolInfos.Add(tool.id, new ToolInfo { keybind = tool.defaultKeybind, enabled = true });
             }
-
-            public KeyCode keyCode;
-            public bool ctrl;
-            public bool alt;
-            public bool shift;
-        }
-
-        public static bool CheckKeybindPressedFor(ToolType toolType)
-        {
-            KeyboardData? data = RemixMenu.GetKeybindFor(toolType);
-            if (data.HasValue)
+            if (tool is IHaveGUI guiHaver)
             {
-                var keybind = data.Value;
-                return Input.GetKeyDown(keybind.keyCode)
-                    && !((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) ^ keybind.ctrl)
-                    && !((Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)) ^ keybind.alt)
-                    && !((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) ^ keybind.shift);
+                int id = windowIDCounter++;
+                guiToID.Add(guiHaver, id);
+                idToGUI.Add(id, guiHaver);
             }
-            return false;
+            RemixMenu.RegisterKeybind(tool.id, tool.defaultKeybind);
         }
 
-        private static int _cachedToolTypeVersion = -1;
-        private static int _cachedToolTypeLength = -1;
-        private static readonly List<KeyValuePair<ToolType, ITool>> _toolOrder = [];
-        internal static List<KeyValuePair<ToolType, ITool>> GetToolOrder()
+        internal static Keybind GetKeybind(string id) => toolInfos[id].keybind;
+        internal static bool CheckEnabled(string id) => toolInfos[id].enabled;
+        internal static void UpdateTool(string id, Keybind keybind, bool enabled) => toolInfos[id] = new ToolInfo { keybind = keybind, enabled = enabled };
+        internal static IEnumerable<string> GetToolIDs() => tools.Select(x => x.id);
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        internal static bool RunUpdateLoop(RainWorld rainWorld)
         {
-            if (ToolType.valuesVersion != _cachedToolTypeVersion || ToolType.values.Count != _cachedToolTypeLength)
+            bool skipOrig = false;
+            foreach (var tool in tools)
             {
-                RegenerateToolOrder();
-                _cachedToolTypeVersion = ToolType.valuesVersion;
-                _cachedToolTypeLength = ToolType.values.Count;
+                if (toolInfos[tool.id].enabled)
+                {
+                    tool.Update(rainWorld);
+                }
             }
-            return _toolOrder;
+            return skipOrig;
         }
 
-        public static ITool GetToolFor(ToolType toolType)
+        internal static void RunGUI()
         {
-            return _toolOrder.FirstOrDefault(x => x.Key == toolType).Value;
-        }
-
-        public static bool ToolEnabled(ToolType toolType) => RemixMenu.EnabledConfig.TryGetValue(toolType, out var enabled) && enabled.Value;
-
-        internal static void RegenerateToolOrder()
-        {
-            _toolOrder.OrderByDescending(ToolOrdering);
-
-            static int B2I(bool value) => value ? 1 : 0;
-
-            static int ToolOrdering(KeyValuePair<ToolType, ITool> item)
+            foreach (var tool in tools)
             {
-                // This prioritizes keybinds with ctrl, alt, and/or shift from being run before versions of the keybinds that don't run with them
-                var kb = RemixMenu.GetKeybindFor(item.Key);
-                return kb is not null ? B2I(kb.Value.ctrl) + B2I(kb.Value.shift) + B2I(kb.Value.alt) + B2I(kb.Value.keyCode != KeyCode.None) * 3 : -1;
+                if (toolInfos[tool.id].enabled && tool is IHaveGUI guiHaver && guiHaver.ShowWindow)
+                {
+                    guiHaver.WindowSize = GUI.Window(guiToID[guiHaver], guiHaver.WindowSize, DoWindow, tool.id);
+                }
             }
         }
 
-        /// <summary>
-        /// Registers a tool with the mod
-        /// </summary>
-        /// <param name="type">Enum value to associate with the tool</param>
-        /// <param name="tool">Instance of the actual tool to act upon</param>
-        /// <param name="defaultKeybind">Default keybind to display in the Remix menu</param>
-        public static void RegisterTool(ToolType type, ITool tool, KeyboardData defaultKeybind)
+        internal static void DoWindow(int windowID)
         {
-            if (RemixMenu.TryRegisterKeybind(type, defaultKeybind))
-            {
-                _toolOrder.Add(new KeyValuePair<ToolType, ITool>(type, tool));
-                RegenerateToolOrder();
-            }
+            IHaveGUI guiHaver = idToGUI[windowID];
+            guiHaver.OnGUI(Custom.rainWorld);
+            GUI.DragWindow(new Rect(0f, 0f, 10000f, 20f));
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Gets path to specified location in user's selected work folder.

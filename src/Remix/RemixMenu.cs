@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
+using WikiUtil.BuiltIn;
 
 namespace WikiUtil.Remix
 {
@@ -34,64 +35,43 @@ namespace WikiUtil.Remix
         private static readonly string DirectorySavePath = Path.Combine(Application.persistentDataPath, "wikiutil.txt");
         internal static string DirectoryConfig = null;
 
-        internal static readonly Dictionary<ToolDatabase.ToolType, Configurable<bool>> EnabledConfig = [];
-        internal static readonly Dictionary<ToolDatabase.ToolType, Configurable<KeyCode>> KeycodeConfig = [];
-        internal static readonly Dictionary<ToolDatabase.ToolType, Configurable<bool>> ControlConfig = [];
-        internal static readonly Dictionary<ToolDatabase.ToolType, Configurable<bool>> AltConfig = [];
-        internal static readonly Dictionary<ToolDatabase.ToolType, Configurable<bool>> ShiftConfig = [];
+        internal static readonly Dictionary<string, Configurable<bool>> EnabledConfig = [];
+        internal static readonly Dictionary<string, Configurable<KeyCode>> KeycodeConfig = [];
+        internal static readonly Dictionary<string, Configurable<bool>> ControlConfig = [];
+        internal static readonly Dictionary<string, Configurable<bool>> AltConfig = [];
+        internal static readonly Dictionary<string, Configurable<bool>> ShiftConfig = [];
 
-        private static readonly Dictionary<ToolDatabase.ToolType, ToolDatabase.KeyboardData> KeyboardDataCache = [];
-        public static void UpdateCachedKeybinds()
+        public static void RegisterKeybind(string toolID, Keybind keybind)
         {
-            HashSet<ToolDatabase.ToolType> toAdd = [.. KeycodeConfig.Keys.Intersect(ControlConfig.Keys).Intersect(AltConfig.Keys).Intersect(ShiftConfig.Keys).Intersect(EnabledConfig.Keys)];
-            KeyboardDataCache.Clear();
+            string toolName = Regex.Replace(toolID, "[^\\w\\d_]", "_").ToLowerInvariant();
+            KeycodeConfig[toolID] = instance.config.Bind($"kb_{toolName}", keybind.keyCode);
+            ControlConfig[toolID] = instance.config.Bind($"ctrl_{toolName}", keybind.ctrl);
+            AltConfig[toolID] = instance.config.Bind($"alt_{toolName}", keybind.alt);
+            ShiftConfig[toolID] = instance.config.Bind($"shift_{toolName}", keybind.shift);
+            EnabledConfig[toolID] = instance.config.Bind($"enabled_{toolName}", true);
 
-            foreach (ToolDatabase.ToolType t in toAdd)
+            KeycodeConfig[toolID].OnChange += ConfigOnChange;
+            ControlConfig[toolID].OnChange += ConfigOnChange;
+            AltConfig[toolID].OnChange += ConfigOnChange;
+            ShiftConfig[toolID].OnChange += ConfigOnChange;
+            EnabledConfig[toolID].OnChange += ConfigOnChange;
+
+            UpdateKeybind(toolID);
+        }
+
+        private static void ConfigOnChange()
+        {
+            foreach (var toolID in ToolDatabase.GetToolIDs())
             {
-                KeyboardDataCache.Add(t, new ToolDatabase.KeyboardData
-                {
-                    keyCode = KeycodeConfig[t].Value,
-                    ctrl = ControlConfig[t].Value,
-                    alt = AltConfig[t].Value,
-                    shift = ShiftConfig[t].Value,
-                });
+                UpdateKeybind(toolID);
             }
-            ToolDatabase.RegenerateToolOrder();
         }
 
-        public static void UpdateCacheFor(ToolDatabase.ToolType t)
+        private static void UpdateKeybind(string toolID)
         {
-            KeyboardDataCache[t] = new ToolDatabase.KeyboardData
-            {
-                keyCode = KeycodeConfig[t].Value,
-                ctrl = ControlConfig[t].Value,
-                alt = AltConfig[t].Value,
-                shift = ShiftConfig[t].Value,
-            };
-            ToolDatabase.RegenerateToolOrder();
-        }
-
-        public static ToolDatabase.KeyboardData? GetKeybindFor(ToolDatabase.ToolType toolType)
-        {
-            if (KeyboardDataCache.TryGetValue(toolType, out var keyboardData) && EnabledConfig.TryGetValue(toolType, out var enabled) && enabled.Value)
-                return keyboardData;
-            return null;
-        }
-
-        public static bool TryRegisterKeybind(ToolDatabase.ToolType toolType, ToolDatabase.KeyboardData keybind)
-        {
-            if (KeycodeConfig.ContainsKey(toolType) && ControlConfig.ContainsKey(toolType) && AltConfig.ContainsKey(toolType) && ShiftConfig.ContainsKey(toolType))
-                return false;
-
-            string toolName = Regex.Replace(toolType.ToString(), "[^\\w\\d_]", "_");
-            KeycodeConfig[toolType] = instance.config.Bind($"kb_{toolName}", keybind.keyCode);
-            ControlConfig[toolType] = instance.config.Bind($"ctrl_{toolName}", keybind.ctrl);
-            AltConfig[toolType] = instance.config.Bind($"alt_{toolName}", keybind.alt);
-            ShiftConfig[toolType] = instance.config.Bind($"shift_{toolName}", keybind.shift);
-            EnabledConfig[toolType] = instance.config.Bind($"enabled_{toolName}", true);
-            UpdateCachedKeybinds();
-
-            return true;
+            Keybind keybind = new(KeycodeConfig[toolID].Value, ControlConfig[toolID].Value, AltConfig[toolID].Value, ShiftConfig[toolID].Value);
+            bool enabled = EnabledConfig[toolID].Value;
+            ToolDatabase.UpdateTool(toolID, keybind, enabled);
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,13 +103,14 @@ namespace WikiUtil.Remix
         {
             List<string> baseModTools =
             [
-                "Screenshotter"
+                ScreenshotterTool.TOOL_ID,
+                IconsTool.TOOL_ID,
             ];
             List<int> validationInts = [];
             for (int i = 0; i < baseModTools.Count; i++)
             {
                 if (i % 4 == 0) validationInts.Add(0);
-                if (EnabledConfig.TryGetValue(new ToolDatabase.ToolType(baseModTools[i], false), out var enabled) && enabled.Value)
+                if (EnabledConfig.TryGetValue(baseModTools[i], out var enabled) && enabled.Value)
                 {
                     validationInts[validationInts.Count - 1] |= 1 << (i % 4);
                 }
@@ -140,7 +121,8 @@ namespace WikiUtil.Remix
             for (int i = 0; i < validationInts.Count; i++)
             {
                 sb.Append(validationInts[i].ToString("X"));
-                if ((validationInts.Count - i - 1) % 4 == 0 && i != validationInts.Count - 1) sb.Append(' ');
+                if (validationInts.Count > 6 && (validationInts.Count - i - 1) % 4 == 0 && i != validationInts.Count - 1)
+                    sb.Append(' ');
             }
 
             // Extra tools

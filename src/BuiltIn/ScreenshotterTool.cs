@@ -1,16 +1,17 @@
 ﻿using System;
 using UnityEngine;
+using WikiUtil.Tools;
 
-namespace WikiUtil.Tools
+namespace WikiUtil.BuiltIn
 {
     /// <summary>
-    /// Takes a screenshott, but in native resolution and with no compression.
+    /// Takes a screenshot, but in native resolution and with no compression.
     /// </summary>
-    internal class ScreenshotterTool : ITool
+    internal class ScreenshotterTool() : ActionTool(TOOL_ID, new Keybind(KeyCode.F12))
     {
-        public bool ShouldIRun(RainWorld world) => true;
+        internal const string TOOL_ID = "Screenshotter";
 
-        public void Run(RainWorld rainWorld, bool update)
+        public override void Action(RainWorld rainWorld)
         {
             string fullpath = ToolDatabase.GetPathTo("screenshots", DateTime.Now.Ticks + ".png");
             ScreenCapture.CaptureScreenshot(fullpath);

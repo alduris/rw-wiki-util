@@ -2,13 +2,13 @@
 using System.Linq;
 using UnityEngine;
 
-namespace WikiUtil.Tools
+namespace WikiUtil.BuiltIn
 {
     internal static class IconsToolHelper
     {
-        public static Texture2D CreatureIcon(CreatureTemplate.Type type, int data = 0)
+        public static Texture2D CreatureIcon(string type, int data = 0)
         {
-            var icon = new IconSymbol.IconSymbolData { critType = type, intData = data };
+            var icon = new IconSymbol.IconSymbolData { critType = new CreatureTemplate.Type(type, false), intData = data };
             var sprite = new FSprite(CreatureSymbol.SpriteNameOfCreature(icon));
             var color = CreatureSymbol.ColorOfCreature(icon);
             var tex = GetSpriteFromAtlas(sprite);
@@ -23,10 +23,11 @@ namespace WikiUtil.Tools
             return tex;
         }
 
-        public static Texture2D ItemIcon(AbstractPhysicalObject.AbstractObjectType type, int data = 0)
+        public static Texture2D ItemIcon(string type, int data = 0)
         {
-            var sprite = new FSprite(ItemSymbol.SpriteNameForItem(type, data));
-            var color = ItemSymbol.ColorForItem(type, data);
+            var aoType = new AbstractPhysicalObject.AbstractObjectType(type, false);
+            var sprite = new FSprite(ItemSymbol.SpriteNameForItem(aoType, data));
+            var color = ItemSymbol.ColorForItem(aoType, data);
             var tex = GetSpriteFromAtlas(sprite);
             var pixels = tex.GetPixels();
             for (int i = 0; i < pixels.Length; i++)
@@ -112,14 +113,14 @@ namespace WikiUtil.Tools
                     else
                     {
                         // Check all 8 neighboring tiles if can do outline
-                        bool tl = (i > 0 && j > 0 && colored[(i - 1) + (j - 1) * w]);
-                        bool tm = (i > 0 && colored[(i - 1) + j * w]);
-                        bool tr = (i > 0 && j < h - 1 && colored[(i - 1) + (j + 1) * w]);
-                        bool ml = (j > 0 && colored[i + (j - 1) * w]);
-                        bool mr = (j < h - 1 && colored[i + (j + 1) * w]);
-                        bool bl = (i < w - 1 && j > 0 && colored[(i + 1) + (j - 1) * w]);
-                        bool bm = (i < w - 1 && colored[(i + 1) + j * w]);
-                        bool br = (i < w - 1 && j < h - 1 && colored[(i + 1) + (j + 1) * w]);
+                        bool tl = i > 0 && j > 0 && colored[i - 1 + (j - 1) * w];
+                        bool tm = i > 0 && colored[i - 1 + j * w];
+                        bool tr = i > 0 && j < h - 1 && colored[i - 1 + (j + 1) * w];
+                        bool ml = j > 0 && colored[i + (j - 1) * w];
+                        bool mr = j < h - 1 && colored[i + (j + 1) * w];
+                        bool bl = i < w - 1 && j > 0 && colored[i + 1 + (j - 1) * w];
+                        bool bm = i < w - 1 && colored[i + 1 + j * w];
+                        bool br = i < w - 1 && j < h - 1 && colored[i + 1 + (j + 1) * w];
                         if (tl || tm || tr || ml || mr || bl || bm || br)
                         {
                             pixels[i + j * w] = Color.black;
