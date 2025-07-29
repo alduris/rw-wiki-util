@@ -31,7 +31,7 @@ sealed class Plugin : BaseUnityPlugin
         {
             ToolDatabase.RegisterTool(new ScreenshotterTool());
             ToolDatabase.RegisterTool(new IconsTool());
-            // encrypted file reader
+            ToolDatabase.RegisterTool(new DecryptionTool());
             // creature/object reader in a region
         }
         catch (Exception e)
@@ -67,6 +67,13 @@ sealed class Plugin : BaseUnityPlugin
 
     private void OnGUI()
     {
-        ToolDatabase.RunGUI();
+        try
+        {
+            ToolDatabase.RunGUI();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 }

@@ -43,8 +43,6 @@ namespace WikiUtil.BuiltIn
         private int objectPicker = -1;
         private string dataString = "0";
 
-        public override bool ShowWindow => toggled;
-
         private const float leftWidth = 300f;
         private const float rightWidth = 150f;
         private const float contentMargin = 10f;

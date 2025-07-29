@@ -6,7 +6,7 @@ namespace WikiUtil.Tools
     {
         public override void ToggleUpdate(RainWorld rainWorld) { }
 
-        public abstract bool ShowWindow { get; }
+        public virtual bool ShowWindow => toggled;
         public abstract Rect WindowSize { get; set; }
 
         public abstract void OnGUI(RainWorld rainWorld);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using RWCustom;
@@ -54,7 +55,14 @@ namespace WikiUtil
             {
                 if (toolInfos[tool.id].enabled)
                 {
-                    tool.Update(rainWorld);
+                    try
+                    {
+                        tool.Update(rainWorld);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
                 }
             }
             return skipOrig;
