@@ -11,7 +11,7 @@ namespace WikiUtil.BuiltIn
 {
     internal class DecryptionTool : GUIToggleTool
     {
-        internal const string TOOL_ID = "Text File Decryptor";
+        internal const string TOOL_ID = "Text File Decryption";
 
         public DecryptionTool() : base(TOOL_ID, new Keybind(KeyCode.D, true, false, false))
         {
