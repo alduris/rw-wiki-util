@@ -106,6 +106,8 @@ namespace WikiUtil.Remix
                 ScreenshotterTool.TOOL_ID,
                 IconsTool.TOOL_ID,
                 DecryptionTool.TOOL_ID,
+                RegionScannerTool.TOOL_ID,
+                MusicRecordsTool.TOOL_ID,
             ];
             List<int> validationInts = [];
             for (int i = 0; i < baseModTools.Count; i++)

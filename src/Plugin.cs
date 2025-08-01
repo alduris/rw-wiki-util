@@ -33,7 +33,8 @@ sealed class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new IconsTool());
             ToolDatabase.RegisterTool(new DecryptionTool());
             ToolDatabase.RegisterTool(new RegionScannerTool());
-            // in-game music manager
+            ToolDatabase.RegisterTool(new MusicRecordsTool());
+            // threat theme mixer
             // pearls + tokens in a region
         }
         catch (Exception e)
