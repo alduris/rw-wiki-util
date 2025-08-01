@@ -27,8 +27,8 @@ namespace WikiUtil.BuiltIn
             "UrbanCandleHolder", "ARZapperOmni", "ARZapperVertical", "ARZapperHorizontal",
 
             // RegionKit as of v3.17.4
-            "ClimbableWire", "ClimbablePole", "PWLightrod", "CustomEntranceSymbol", "NoWallSlideZone", "LittlePlanet",
-            "ProjectedCircle", "UpsideDownWaterFall", "ColoredLightBeam", "FanLight", "NoBatflyLurkZone",
+            "ClimbableWire", "ClimbablePole", "ClimbableRope", "PWLightrod", "CustomEntranceSymbol", "NoWallSlideZone",
+            "LittlePlanet", "ProjectedCircle", "UpsideDownWaterFall", "ColoredLightBeam", "FanLight", "NoBatflyLurkZone",
             "PCPlayerSensitiveLightSource", "WaterFallDepth", "NoDropwigPerchZone",
         ];
     }
