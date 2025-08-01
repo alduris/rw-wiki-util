@@ -58,6 +58,10 @@ namespace WikiUtil
                     try
                     {
                         tool.Update(rainWorld);
+                        if (tool is IPauseGame pauser)
+                        {
+                            skipOrig |= pauser.Pause;
+                        }
                     }
                     catch (Exception e)
                     {
