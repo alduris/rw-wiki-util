@@ -9,6 +9,9 @@ using WikiUtil.Tools;
 
 namespace WikiUtil
 {
+    /// <summary>
+    /// Tool tracking system in Wiki Util. Register your <see cref="Tool"/>s here.
+    /// </summary>
     public static class ToolDatabase
     {
         private struct ToolInfo
@@ -23,12 +26,17 @@ namespace WikiUtil
         private static readonly Dictionary<IHaveGUI, int> guiToID = [];
         private static readonly Dictionary<int, IHaveGUI> idToGUI = [];
 
-        public static void RegisterTool(Tool tool)
+        /// <summary>
+        /// Registers a tool with the system.
+        /// </summary>
+        /// <param name="tool">The <see cref="Tool"/> to register</param>
+        /// <param name="enabledByDefault">Whether or not the tool should be enabled by default. <c>True</c> by default.</param>
+        public static void RegisterTool(Tool tool, bool enabledByDefault = true)
         {
             tools.Add(tool);
             if (!toolInfos.ContainsKey(tool.id))
             {
-                toolInfos.Add(tool.id, new ToolInfo { keybind = tool.defaultKeybind, enabled = true });
+                toolInfos.Add(tool.id, new ToolInfo { keybind = tool.defaultKeybind, enabled = enabledByDefault });
             }
             if (tool is IHaveGUI guiHaver)
             {

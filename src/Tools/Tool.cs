@@ -2,13 +2,21 @@
 
 namespace WikiUtil.Tools
 {
+    /// <summary>
+    /// Basic tool that runs code every <see cref="RainWorld.Update"/> if enabled.
+    /// </summary>
+    /// <param name="id">ID/display name of the tool</param>
+    /// <param name="defaultKeybind">Default keybind of the tool</param>
     public abstract class Tool(string id, Keybind defaultKeybind)
     {
+        /// <summary>ID/display name of the tool</summary>
         public readonly string id = id;
         internal readonly Keybind defaultKeybind = defaultKeybind;
 
+        /// <summary>Returns the keybind associated with the tool</summary>
         public Keybind Keybind => ToolDatabase.GetKeybind(id);
 
+        /// <summary>Checks whether the tool's associated keybind is pressed (that is, in the first frame it is held)</summary>
         public bool KeybindPressed
         {
             get
@@ -21,6 +29,7 @@ namespace WikiUtil.Tools
             }
         }
 
+        /// <summary>Checks whether the tool's associated keybind is held</summary>
         public bool KeybindHeld
         {
             get
@@ -33,6 +42,10 @@ namespace WikiUtil.Tools
             }
         }
 
+        /// <summary>
+        /// Runs during <see cref="RainWorld.Update"/>
+        /// </summary>
+        /// <param name="rainWorld">The instance of <see cref="RainWorld"/></param>
         public abstract void Update(RainWorld rainWorld);
     }
 }

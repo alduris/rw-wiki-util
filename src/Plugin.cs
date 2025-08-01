@@ -13,7 +13,7 @@ using WikiUtil.Remix;
 namespace WikiUtil;
 
 [BepInPlugin("alduris.wikiutil", "Wiki Util", "1.0")]
-sealed class Plugin : BaseUnityPlugin
+internal class Plugin : BaseUnityPlugin
 {
     public static new ManualLogSource Logger;
     private bool _isInit;

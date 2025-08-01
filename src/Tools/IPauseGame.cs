@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace WikiUtil.Tools
+﻿namespace WikiUtil.Tools
 {
+    /// <summary>
+    /// Can pause any actions that take place within <see cref="RainWorld.Update"/>
+    /// </summary>
     public interface IPauseGame
     {
+        /// <summary>
+        /// Whether or not to pause
+        /// </summary>
         public bool Pause { get; }
     }
 }

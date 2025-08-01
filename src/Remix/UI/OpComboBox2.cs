@@ -13,7 +13,7 @@ namespace WikiUtil.Remix.UI
      * 
      * Thanks Henpemaz
      */
-    public class OpComboBox2 : Menu.Remix.MixedUI.OpComboBox
+    internal class OpComboBox2 : Menu.Remix.MixedUI.OpComboBox
     {
         public OpComboBox2(Configurable<string> config, Vector2 pos, float width, string[] array) : base(config, pos, width, array) { }
         public OpComboBox2(Configurable<string> config, Vector2 pos, float width, List<ListItem> list) : base(config, pos, width, list) { }
@@ -33,7 +33,7 @@ namespace WikiUtil.Remix.UI
         }
     }
 
-    public class OpResourceSelector2 : Menu.Remix.MixedUI.OpResourceSelector
+    internal class OpResourceSelector2 : Menu.Remix.MixedUI.OpResourceSelector
     {
         public OpResourceSelector2(ConfigurableBase config, Vector2 pos, float width) : base(config, pos, width) { }
         public OpResourceSelector2(Configurable<string> config, Vector2 pos, float width, SpecialEnum listType) : base(config, pos, width, listType) { }

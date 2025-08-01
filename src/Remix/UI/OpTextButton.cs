@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace WikiUtil.Remix.UI
 {
-    public class OpTextButton(Vector2 pos, Vector2 size, string displayText = "") : OpSimpleButton(pos, size, displayText)
+    internal class OpTextButton(Vector2 pos, Vector2 size, string displayText = "") : OpSimpleButton(pos, size, displayText)
     {
         private readonly string _origText = displayText;
 

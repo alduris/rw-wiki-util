@@ -3,7 +3,7 @@ using RWCustom;
 
 namespace WikiUtil.Remix
 {
-    public abstract class Tab(OptionInterface owner, string name) : OpTab(owner, Translate(name))
+    internal abstract class Tab(OptionInterface owner, string name) : OpTab(owner, Translate(name))
     {
         public abstract void Initialize();
         public abstract void Update();
