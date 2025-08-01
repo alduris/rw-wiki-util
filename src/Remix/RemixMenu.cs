@@ -136,7 +136,7 @@ namespace WikiUtil.Remix
                 sb.Append(extra);
             }
 
-            return sb.ToString();
+            return $"{ValidationString_ID()} {sb}";
         }
     }
 }

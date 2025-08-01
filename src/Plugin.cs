@@ -50,6 +50,7 @@ sealed class Plugin : BaseUnityPlugin
         if (_isInit) return;
         _isInit = true;
         MachineConnector.SetRegisteredOI("alduris.wikiutil", _remixMenu);
+        Logger.LogDebug("Validation string: " + _remixMenu.ValidationString());
     }
 
     private void ToolRunner(On.RainWorld.orig_Update orig, RainWorld self)
