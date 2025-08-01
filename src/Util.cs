@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
@@ -18,5 +21,15 @@ namespace WikiUtil
         }
 
         public static string SafeString(string str) => Regex.Replace(str, "[^\\w\\d\\-]", "_"); // guaranteed to be able to make into a file name
+
+        public static T GetUninitialized<T>() => (T)FormatterServices.GetUninitializedObject(typeof(T));
+
+        public static HashSet<TEnum> GetExtEnumFieldsFromClass<TEnum, TClass>()
+        {
+            return [.. typeof(TClass).GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Where(x => x.FieldType == typeof(TEnum) && x.GetValue(null) != null)
+                .Select(x => x.GetValue(null))
+                .Cast<TEnum>()];
+        }
     }
 }

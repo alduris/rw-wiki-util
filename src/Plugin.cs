@@ -32,7 +32,9 @@ sealed class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new ScreenshotterTool());
             ToolDatabase.RegisterTool(new IconsTool());
             ToolDatabase.RegisterTool(new DecryptionTool());
-            // creature/object reader in a region
+            ToolDatabase.RegisterTool(new RegionScannerTool());
+            // in-game music manager
+            // pearls + tokens in a region
         }
         catch (Exception e)
         {
