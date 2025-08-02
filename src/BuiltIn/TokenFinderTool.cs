@@ -217,10 +217,6 @@ namespace WikiUtil.BuiltIn
                 {
                     if (po.active)
                     {
-                        if (po.data is CollectToken.CollectTokenData)
-                        {
-                            Plugin.Logger.LogDebug($"{room.name} --> {(po.data as CollectToken.CollectTokenData).tokenString} ({string.Join(", ", (po.data as CollectToken.CollectTokenData).availableToPlayers)})");
-                        }
                         if (po.data is PlacedObject.DataPearlData pearlData && !pearlData.hidden && TokenFinderToolHelper.IsAllowedPearl(pearlData.pearlType))
                         {
                             foundPearls.Add(new(room.name, pearlData.pearlType));
