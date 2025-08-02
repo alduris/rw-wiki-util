@@ -348,7 +348,10 @@ namespace WikiUtil.BuiltIn
                     var timeline = slugcat != null ? SlugcatStats.SlugcatToTimeline(new SlugcatStats.Name(slugcat, false)) : null;
                     foreach (var room in world.abstractRooms)
                     {
-                        rooms[room.name] = new RoomRepresentation(room, timeline);
+                        if (!world.DisabledMapRooms.Contains(room.name, StringComparer.OrdinalIgnoreCase))
+                        {
+                            rooms[room.name] = new RoomRepresentation(room, timeline);
+                        }
                     }
                 }
             }

@@ -34,8 +34,7 @@ internal class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new DecryptionTool());
             ToolDatabase.RegisterTool(new RegionScannerTool());
             ToolDatabase.RegisterTool(new MusicRecordsTool());
-            // threat theme mixer
-            // pearls + tokens in a region
+            ToolDatabase.RegisterTool(new TokenFinderTool());
         }
         catch (Exception e)
         {

@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace WikiUtil
 {
     /// <summary>
     /// Keybind data
     /// </summary>
-    public struct Keybind
+    public struct Keybind : IEquatable<Keybind>
     {
         /// <summary>
         /// Initializes with a keycode and no special keys held.
@@ -40,5 +41,15 @@ namespace WikiUtil
         public bool alt;
         /// <summary>Whether Shift is pressed</summary>
         public bool shift;
+
+        /// <summary>
+        /// Determines if two keybinds are equivalent
+        /// </summary>
+        /// <param name="other">The <see cref="Keybind"/> to compare to</param>
+        /// <returns>Equivalence</returns>
+        public readonly bool Equals(Keybind other)
+        {
+            return keyCode == other.keyCode && ctrl == other.ctrl && alt == other.alt && shift == other.shift;
+        }
     }
 }
