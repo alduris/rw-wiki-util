@@ -109,6 +109,7 @@ namespace WikiUtil.Remix
                 RegionScannerTool.TOOL_ID,
                 MusicRecordsTool.TOOL_ID,
                 PauseTool.TOOL_ID,
+                TokenFinderTool.TOOL_ID,
             ];
             List<int> validationInts = [];
             for (int i = 0; i < baseModTools.Count; i++)
@@ -133,7 +134,7 @@ namespace WikiUtil.Remix
             var extraModTools = EnabledConfig.Keys.Select(x => x.ToString()).Except(baseModTools);
             foreach (var extra in extraModTools)
             {
-                sb.Append(' ');
+                sb.Append(", ");
                 sb.Append(extra);
             }
 
