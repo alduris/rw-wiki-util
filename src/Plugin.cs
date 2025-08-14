@@ -34,6 +34,7 @@ internal class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new DecryptionTool());
             ToolDatabase.RegisterTool(new RegionScannerTool());
             ToolDatabase.RegisterTool(new MusicRecordsTool());
+            ToolDatabase.RegisterTool(new PauseTool(), false);
             ToolDatabase.RegisterTool(new TokenFinderTool());
         }
         catch (Exception e)
