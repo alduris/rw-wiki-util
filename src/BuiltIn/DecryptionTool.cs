@@ -145,7 +145,7 @@ namespace WikiUtil.BuiltIn
         private class DirectoryRepresentation(string name, DirectoryRepresentation parent)
         {
             private static readonly HashSet<string> FORBIDDEN_SUBDIRS = [
-                "world", "levels",  // prevent showing level files
+                "levels", "gates", "gate shelters",  // prevent showing level files (though the world folder is handled separately)
                 "decals", "palettes", "terrainpalettes", "illustrations", "scenes", "fairypresets", "projections",  // prevent image-exclusive folders
                 "music", "loadedsoundeffects",  // sound/music folders
                 "atlases", "assetbundles",  // asset collections that generally aren't ever human-readable text
@@ -182,14 +182,14 @@ namespace WikiUtil.BuiltIn
                     foreach (var fullDir in Directory.GetDirectories(DirPath))
                     {
                         string subdir = Path.GetFileName(fullDir);
-                        if (!FORBIDDEN_SUBDIRS.Contains(subdir.ToLowerInvariant()))
+                        if (!FORBIDDEN_SUBDIRS.Contains(subdir.ToLowerInvariant()) && (name.ToLowerInvariant() != "world" || !subdir.ToLowerInvariant().EndsWith("-rooms")))
                         {
                             subdirs.Add(new DirectoryRepresentation(subdir, this));
                         }
                     }
 
                     files = [];
-                    foreach (var file in Directory.GetFiles(DirPath).Where(x => x.EndsWith(".txt")))
+                    foreach (var file in Directory.GetFiles(DirPath).Where(x => x.EndsWith(".txt") || x.EndsWith(".json")))
                     {
                         files.Add(Path.GetFileName(file));
                     }
