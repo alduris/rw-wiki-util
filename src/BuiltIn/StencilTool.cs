@@ -446,6 +446,8 @@ namespace WikiUtil.BuiltIn
 
         private void CropWhitespace(Texture2D texture)
         {
+            if (texture.width == 0 || texture.height == 0) return;
+
             Color[] oldPixels = texture.GetPixels();
             int minX = 0, maxX = texture.width - 1, minY = 0, maxY = texture.height - 1;
             bool foundMinX = false, foundMaxX = false, foundMinY = false, foundMaxY = false;
@@ -486,6 +488,8 @@ namespace WikiUtil.BuiltIn
 
             int width = Math.Max(0, maxX - minX + 1);
             int height = Math.Max(0, maxY - minY + 1);
+
+            if (width < 1 || height < 1) return;
 
             Color[] newPixels = texture.GetPixels(minX, minY, width, height);
 
