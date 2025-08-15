@@ -1,6 +1,9 @@
 # Wiki Utils
 Collection of features for wikiing in Rain World. Hopefully useful in some way.
 
+## Downloading
+The mod can be installed through [the Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3549210022) or downloaded through [the releases page](https://github.com/alduris/rw-wiki-util/releases/latest).
+
 ## Built-In Tools
 These tools can be enabled/disabled and have their keybinds changed through the mod's options menu. For tools that output files, their output location can also be changed there.
 | Tool | Default Keybind | Description |
