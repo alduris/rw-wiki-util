@@ -37,7 +37,6 @@ internal class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new PauseTool(), false);
             ToolDatabase.RegisterTool(new TokenFinderTool());
             ToolDatabase.RegisterTool(new StencilTool());
-            ToolDatabase.RegisterTool(new CorniferTool());
         }
         catch (Exception e)
         {
