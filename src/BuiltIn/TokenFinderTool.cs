@@ -101,9 +101,9 @@ namespace WikiUtil.BuiltIn
 
             // Region picker
             const int REGIONCOLS = 3;
-            float regionPickerHeight = 24f * Mathf.CeilToInt((float)regions.Length / REGIONCOLS) - 4f;
-            regionPickerScroll = GUI.BeginScrollView(new Rect(contentMargin, 44f, regionPickerWidth, contentHeight), regionPickerScroll, new Rect(0f, 0f, regionPickerWidth - 20f, regionPickerHeight));
-            regionPickerValue = GUI.SelectionGrid(new Rect(0f, 0f, regionPickerWidth - 20f, regionPickerHeight), regionPickerValue, regions, REGIONCOLS);
+            float regionPickerInnerHeight = 24f * Mathf.CeilToInt((float)regions.Length / REGIONCOLS) - 4f;
+            regionPickerScroll = GUI.BeginScrollView(new Rect(contentMargin, 44f, regionPickerWidth, contentHeight), regionPickerScroll, new Rect(0f, 0f, regionPickerWidth - 20f, regionPickerInnerHeight));
+            regionPickerValue = GUI.SelectionGrid(new Rect(0f, 0f, regionPickerWidth - 20f, regionPickerInnerHeight), regionPickerValue, regions, REGIONCOLS);
             GUI.EndScrollView();
 
             // Load selected region
@@ -114,8 +114,8 @@ namespace WikiUtil.BuiltIn
 
             // Slugcat selection
             const int SLUGCATCOLS = 4;
-            float slugcatPickerHeight = 24f * Mathf.CeilToInt((float)slugcats.Length / SLUGCATCOLS) - 4f;
-            slugcatPickerScroll = GUI.BeginScrollView(new Rect(rightAreaStartX, 44f, rightAreaWidth, slugcatPickerHeight), slugcatPickerScroll, new Rect(0f, 0f, rightAreaWidth - 20f, slugcatPickerHeight));
+            float slugcatPickerInnerHeight = 24f * Mathf.CeilToInt((float)slugcats.Length / SLUGCATCOLS) - 4f;
+            slugcatPickerScroll = GUI.BeginScrollView(new Rect(rightAreaStartX, 44f, rightAreaWidth, slugcatPickerHeight), slugcatPickerScroll, new Rect(0f, 0f, rightAreaWidth - 20f, slugcatPickerInnerHeight));
             for (int i = 0; i < slugcats.Length; i++)
             {
                 float x = rightAreaWidth / SLUGCATCOLS * (i % SLUGCATCOLS);

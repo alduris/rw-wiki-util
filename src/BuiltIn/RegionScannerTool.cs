@@ -113,8 +113,8 @@ namespace WikiUtil.BuiltIn
 
             // Slugcat selection
             const int SLUGCATCOLS = 4;
-            float slugcatPickerHeight = 24f * Mathf.CeilToInt((float)slugcats.Length / SLUGCATCOLS) - 4f;
-            slugcatPickerScroll = GUI.BeginScrollView(new Rect(rightAreaStartX, 44f, rightAreaWidth, slugcatPickerHeight), slugcatPickerScroll, new Rect(0f, 0f, rightAreaWidth - 20f, slugcatPickerHeight));
+            float slugcatPickerInnerHeight = 24f * Mathf.CeilToInt((float)slugcats.Length / SLUGCATCOLS) - 4f;
+            slugcatPickerScroll = GUI.BeginScrollView(new Rect(rightAreaStartX, 44f, rightAreaWidth, slugcatPickerHeight), slugcatPickerScroll, new Rect(0f, 0f, rightAreaWidth - 20f, slugcatPickerInnerHeight));
             for (int i = 0; i < slugcats.Length; i++)
             {
                 float x = rightAreaWidth / SLUGCATCOLS * (i % SLUGCATCOLS);
