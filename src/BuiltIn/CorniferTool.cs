@@ -108,6 +108,7 @@ namespace WikiUtil.BuiltIn
 
         private void GenerateCorniferFile()
         {
+            // https://github.com/enchanted-sword/Cornifer/blob/master/Main.cs#L870
             string output = ToolDatabase.GetPathTo("cornifer", $"{regions[regionPickerValue]}_{slugcats[slugcatPickerValue]}.cornimap");
 
             Dictionary<string, object> saveData = [];
