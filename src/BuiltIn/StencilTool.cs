@@ -34,7 +34,7 @@ namespace WikiUtil.BuiltIn
         public bool Pause => toggled;
 
         private const float leftWidth = 250f;
-        private const float rightWidth = 450f;
+        private const float rightWidth = 500f;
         private const float contentHeight = 500f;
         private const float contentMargin = 10f;
         public override Rect WindowSize { get; set; } = new Rect(100f, 100f, leftWidth + rightWidth + contentMargin * 3, 20f + contentHeight);
@@ -99,7 +99,7 @@ namespace WikiUtil.BuiltIn
 
                 var sLeasers = game.cameras[0].spriteLeasers;
                 sLeaserListScroll = GUI.BeginScrollView(new Rect(contentMargin, 20f, leftWidth, contentHeight), sLeaserListScroll, new Rect(0f, 0f, leftWidth - 20f, 24f * (sLeasers.Count + 1)));
-                GUI.Label(new Rect(0f, 0f, leftWidth - 20f, 24f), "Object must be fully in camera view");
+                GUI.Label(new Rect(0f, 0f, leftWidth - 20f, 24f), "Note: objects must be in camera view.");
                 for (int i = 0; i < sLeasers.Count; i++)
                 {
                     bool isSelected = currentSLeasers.Contains(sLeasers[i]);
@@ -149,8 +149,8 @@ namespace WikiUtil.BuiltIn
                         new Rect(
                             rightStartX + rightWidth / 2f - textureCache.width / 2f,
                             20f + textureAreaHeight / 2f - textureCache.height / 2f,
-                            textureCache.width,
-                            textureCache.height
+                            Mathf.Min(rightWidth, textureCache.width),
+                            Mathf.Min(textureAreaHeight, textureCache.height)
                         ),
                         textureCache
                     );
@@ -374,7 +374,6 @@ namespace WikiUtil.BuiltIn
             {
                 // Disregard invisible items
                 if (!node.isVisible || !node._isOnStage) yield break;
-                Plugin.Logger.LogDebug(node.GetType().Name);
 
                 if (node is FContainer container)
                 {
@@ -403,6 +402,7 @@ namespace WikiUtil.BuiltIn
                     {
                         Plugin.Logger.LogWarning($"UNKNOWN FACET TYPE! ({facetNode._facetType.name})");
                     }
+
                     if (facetLength > 0)
                     {
                         int startIndex = facetNode._firstFacetIndex * facetLength;
@@ -412,7 +412,6 @@ namespace WikiUtil.BuiltIn
                             {
                                 Vector3 vert = facetNode._renderLayer.vertices[startIndex + i * facetLength + j];
                                 yield return new Vector2(vert.x, vert.y); // we don't care about z
-                                Plugin.Logger.LogDebug($"  {vert.x}, {vert.y}");
                             }
                         }
                     }
@@ -442,64 +441,6 @@ namespace WikiUtil.BuiltIn
             RenderTexture.active = oldRT;
 
             textureCache.Apply();
-        }
-
-        private void CreateTextureCacheTheUglyWay()
-        {
-            if (textureCache != null)
-            {
-                UnityEngine.Object.Destroy(textureCache);
-            }
-            textureCache = new Texture2D(Futile.screen.pixelWidth, Futile.screen.pixelHeight, TextureFormat.ARGB32, false);
-            // Graphics.CopyTexture(Futile.instance.camera.activeTexture, textureCache);
-
-            Color[] pixels = textureCache.GetPixels();
-            int minX = 0, maxX = textureCache.width, minY = 0, maxY = textureCache.height;
-            bool foundMinX = false, foundMaxX = false, foundMinY = false, foundMaxY = false;
-
-            while (minX < maxX && (!foundMinX || !foundMaxX))
-            {
-                for (int y = minY; y < maxY; y++)
-                {
-                    if (!foundMinX && pixels[PosToIndex(minX, y)].a > 0f)
-                    {
-                        foundMinX = true;
-                    }
-                    if (!foundMaxX && pixels[PosToIndex(maxX, y)].a > 0f)
-                    {
-                        foundMaxX = true;
-                    }
-                }
-                if (!foundMinX) minX++;
-                if (!foundMaxX) maxX--;
-            }
-
-            while (minX < maxX && minY < maxY && (!foundMinY || !foundMaxY))
-            {
-                for (int x = minX; x < maxX; x++)
-                {
-                    if (!foundMinY && pixels[PosToIndex(x, minY)].a > 0f)
-                    {
-                        foundMinY = true;
-                    }
-                    if (!foundMaxY && pixels[PosToIndex(x, maxY)].a > 0f)
-                    {
-                        foundMaxY = true;
-                    }
-                }
-                if (!foundMinY) minY++;
-                if (!foundMaxY) maxY--;
-            }
-
-            int width = Math.Max(0, maxX - minX);
-            int height = Math.Max(0, maxY - minY);
-            var tempTex = new Texture2D(width, height, TextureFormat.ARGB32, 1, false);
-            Graphics.CopyTexture(textureCache, 0, 0, minX, minY, width, height, tempTex, 0, 0, 0, 0);
-            UnityEngine.Object.Destroy(textureCache);
-            textureCache = tempTex;
-            textureCache.Apply();
-
-            int PosToIndex(int x, int y) => x + y * textureCache.width;
         }
     }
 }
