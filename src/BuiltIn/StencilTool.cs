@@ -422,7 +422,7 @@ namespace WikiUtil.BuiltIn
         private void CreateTextureCache()
         {
             var bounds = DetermineMeshBounds();
-            Plugin.Logger.LogDebug(bounds);
+
             if (textureCache != null)
             {
                 UnityEngine.Object.Destroy(textureCache);
@@ -440,7 +440,59 @@ namespace WikiUtil.BuiltIn
             textureCache.ReadPixels(new Rect(x, y, textureCache.width, textureCache.height), 0, 0);
             RenderTexture.active = oldRT;
 
+            CropWhitespace(textureCache);
             textureCache.Apply();
+        }
+
+        private void CropWhitespace(Texture2D texture)
+        {
+            Color[] oldPixels = texture.GetPixels();
+            int minX = 0, maxX = texture.width - 1, minY = 0, maxY = texture.height - 1;
+            bool foundMinX = false, foundMaxX = false, foundMinY = false, foundMaxY = false;
+
+            while (minX < maxX && (!foundMinX || !foundMaxX))
+            {
+                for (int y = minY; y < maxY; y++)
+                {
+                    if (!foundMinX && oldPixels[PosToIndex(minX, y)].a > 0f)
+                    {
+                        foundMinX = true;
+                    }
+                    if (!foundMaxX && oldPixels[PosToIndex(maxX, y)].a > 0f)
+                    {
+                        foundMaxX = true;
+                    }
+                }
+                if (!foundMinX) minX++;
+                if (!foundMaxX) maxX--;
+            }
+
+            while (minX < maxX && minY < maxY && (!foundMinY || !foundMaxY))
+            {
+                for (int x = minX; x < maxX; x++)
+                {
+                    if (!foundMinY && oldPixels[PosToIndex(x, minY)].a > 0f)
+                    {
+                        foundMinY = true;
+                    }
+                    if (!foundMaxY && oldPixels[PosToIndex(x, maxY)].a > 0f)
+                    {
+                        foundMaxY = true;
+                    }
+                }
+                if (!foundMinY) minY++;
+                if (!foundMaxY) maxY--;
+            }
+
+            int width = Math.Max(0, maxX - minX + 1);
+            int height = Math.Max(0, maxY - minY + 1);
+
+            Color[] newPixels = texture.GetPixels(minX, minY, width, height);
+
+            texture.Resize(width, height);
+            texture.SetPixels(newPixels);
+
+            int PosToIndex(int x, int y) => x + y * texture.width;
         }
     }
 }

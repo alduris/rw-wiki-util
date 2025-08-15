@@ -73,6 +73,7 @@ namespace WikiUtil
                     }
                     catch (Exception e)
                     {
+                        Plugin.Logger.LogError(e);
                         Debug.LogException(e);
                     }
                 }
@@ -86,7 +87,15 @@ namespace WikiUtil
             {
                 if (toolInfos[tool.id].enabled && tool is IHaveGUI guiHaver && guiHaver.ShowWindow)
                 {
-                    guiHaver.WindowSize = GUI.Window(guiToID[guiHaver], guiHaver.WindowSize, DoWindow, tool.id);
+                    try
+                    {
+                        guiHaver.WindowSize = GUI.Window(guiToID[guiHaver], guiHaver.WindowSize, DoWindow, tool.id);
+                    }
+                    catch (Exception e)
+                    {
+                        Plugin.Logger.LogError(e);
+                        Debug.LogException(e);
+                    }
                 }
             }
         }
