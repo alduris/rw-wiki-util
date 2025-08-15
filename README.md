@@ -18,6 +18,6 @@ These tools can be enabled/disabled and have their keybinds changed through the 
 | Token Scanner | Ctrl+T | Allows scanning regions for their tokens, pearls, echoes, and more, per-slugcat. Note that this process is not perfect and results should be manually verified afterwards. |
 
 ## Public API
-Register a tool through `WikiUtil.ToolDatabase.RegisterTool()`! Tools must implement `Tool` in some way; it is recommended to use one of the specific subclasses that handle some of the logic for you: `ActionTool`, `HoldTool`, `ToggleTool`, and `GUIToggleTool` (if you aren't using `GUIToggleTool`, your `Tool` must also implement the interface `IHaveGUI`). Check out the built-in tools for examples of how to make them.
+Register a tool through `WikiUtil.ToolDatabase.RegisterTool()`! Tools must implement `WikiUtil.Tools.Tool` in some way; it is recommended to use one of the specific subclasses that handle some of the logic for you: `ActionTool`, `HoldTool`, `ToggleTool`, and `GUIToggleTool` (if you aren't using `GUIToggleTool`, your `Tool` must also implement the interface `IHaveGUI`). Check out the built-in tools for examples of how to make them.
 
 Tools are run every `RainWorld.Update` tick; if you only want it to run while there is a `RainWorldGame` process or similar, you will have to add your own logic for those tools. See the built-in `StencilTool` for a good way to do that.
