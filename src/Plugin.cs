@@ -36,6 +36,7 @@ internal class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new MusicRecordsTool());
             ToolDatabase.RegisterTool(new PauseTool(), false);
             ToolDatabase.RegisterTool(new TokenFinderTool());
+            ToolDatabase.RegisterTool(new StencilTool());
         }
         catch (Exception e)
         {

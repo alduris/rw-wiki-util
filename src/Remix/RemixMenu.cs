@@ -110,6 +110,7 @@ namespace WikiUtil.Remix
                 MusicRecordsTool.TOOL_ID,
                 PauseTool.TOOL_ID,
                 TokenFinderTool.TOOL_ID,
+                StencilTool.TOOL_ID,
             ];
             List<int> validationInts = [];
             for (int i = 0; i < baseModTools.Count; i++)
