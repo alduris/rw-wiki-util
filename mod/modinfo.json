@@ -4,7 +4,7 @@
   "version": "1.0",
   "authors": "Alduris",
   "description": "Utility mod for wiki folk",
-  "tags": ["Tools", "Utility"],
+  "tags": ["Tools", "Utility", "Wiki"],
   "requirements": [],
   "requirements_names": [],
   "checksum_override_version": false

@@ -33,7 +33,19 @@ namespace WikiUtil.Remix
         // Configurables and its internal API
 
         private static readonly string DirectorySavePath = Path.Combine(Application.persistentDataPath, "wikiutil.txt");
-        internal static string DirectoryConfig = null;
+        private static string _DirectoryConfigBackingField = null;
+        internal static string DirectoryConfig
+        {
+            get => _DirectoryConfigBackingField;
+            set
+            {
+                if (_DirectoryConfigBackingField != value && _DirectoryConfigBackingField != null && value != null)
+                {
+                    File.WriteAllText(DirectorySavePath, value);
+                }
+                _DirectoryConfigBackingField = value;
+            }
+        }
 
         internal static readonly Dictionary<string, Configurable<bool>> EnabledConfig = [];
         internal static readonly Dictionary<string, Configurable<KeyCode>> KeycodeConfig = [];
