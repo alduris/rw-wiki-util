@@ -11,6 +11,7 @@ namespace WikiUtil.BuiltIn
         private Phase phase = Phase.Visibility;
 
         private int maxViz = 0;
+        private int maxTerrProx = 0;
         private int maxFloorAlt = 0;
         private int maxSmoothFloorAlt = 0;
 
@@ -22,6 +23,7 @@ namespace WikiUtil.BuiltIn
                 for (int j = 0; j < room.TileHeight; j++)
                 {
                     maxViz = Math.Max(maxViz, room.aimap.getAItile(i, j).visibility);
+                    maxTerrProx = Math.Max(maxTerrProx, room.aimap.getTerrainProximity(i, j));
 
                     int floorAlt = room.aimap.getAItile(i, j).floorAltitude;
                     int smoothFloorAlt = room.aimap.getAItile(i, j).smoothedFloorAltitude;
@@ -96,6 +98,7 @@ namespace WikiUtil.BuiltIn
             string prefix = phase switch
             {
                 Phase.Visibility => "Visibility: ",
+                Phase.TerrainProximity => "Terrain proximity: ",
                 Phase.FloorAltitude => "Floor altitude: ",
                 Phase.SmoothedFloorAltitude => "Smoothed floor altitude: ",
                 _ => "",
@@ -104,6 +107,7 @@ namespace WikiUtil.BuiltIn
             int value = phase switch
             {
                 Phase.Visibility => room.aimap.getAItile(pos).visibility,
+                Phase.TerrainProximity => room.aimap.getTerrainProximity(pos),
                 Phase.FloorAltitude => room.aimap.getAItile(pos).floorAltitude,
                 Phase.SmoothedFloorAltitude => room.aimap.getAItile(pos).smoothedFloorAltitude,
                 _ => 0
@@ -119,6 +123,7 @@ namespace WikiUtil.BuiltIn
             int color = phase switch
             {
                 Phase.Visibility => room.aimap.getAItile(x, y).visibility,
+                Phase.TerrainProximity => room.aimap.getTerrainProximity(x, y),
                 Phase.FloorAltitude => room.aimap.getAItile(x, y).floorAltitude,
                 Phase.SmoothedFloorAltitude => room.aimap.getAItile(x, y).smoothedFloorAltitude,
                 _ => 0,
@@ -127,6 +132,7 @@ namespace WikiUtil.BuiltIn
             int max = phase switch
             {
                 Phase.Visibility => maxViz,
+                Phase.TerrainProximity => maxTerrProx,
                 Phase.FloorAltitude => maxFloorAlt,
                 Phase.SmoothedFloorAltitude => maxSmoothFloorAlt,
                 _ => 0
@@ -140,7 +146,7 @@ namespace WikiUtil.BuiltIn
                     color = max - color - 1;
             }
 
-            return Custom.HSL2RGB(0.667f * (1f - color / (float)max), 1f, 0.5f, 0.4f);
+            return Custom.HSL2RGB(0.667f * (1f - color / max), 1f, 0.5f, 0.4f);
         }
 
         public void NextPhase()
@@ -151,6 +157,7 @@ namespace WikiUtil.BuiltIn
         private enum Phase
         {
             Visibility,
+            TerrainProximity,
             FloorAltitude,
             SmoothedFloorAltitude,
             Destroy
