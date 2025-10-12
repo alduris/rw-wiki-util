@@ -158,6 +158,7 @@ namespace WikiUtil.BuiltIn
                     if (GUI.Button(new Rect(rightStartX, 20f + contentHeight - 24f - contentMargin, rightWidth, 24f), "Download"))
                     {
                         const string FOLDER_NAME = "stencil";
+                        const int NAME_CAP = 240;
                         string fileName;
                         if (currentSLeasers.Count == 1)
                         {
@@ -165,12 +166,11 @@ namespace WikiUtil.BuiltIn
                         }
                         else
                         {
-                            const int NAME_CAP = 240;
                             fileName = string.Join("_", currentSLeasers.OrderBy(x => x.drawableObject.GetType().Name, StringComparer.OrdinalIgnoreCase).Select(x => x.drawableObject.GetType().Name));
-                            if (fileName.Length > NAME_CAP)
-                            {
-                                fileName = fileName.Substring(0, NAME_CAP);
-                            }
+                        }
+                        if (fileName.Length > NAME_CAP)
+                        {
+                            fileName = fileName.Substring(0, NAME_CAP);
                         }
                         string fullpath = ToolDatabase.GetPathTo(FOLDER_NAME, fileName + ".png");
                         int i = 2;
@@ -180,6 +180,7 @@ namespace WikiUtil.BuiltIn
                             i++;
                         }
                         File.WriteAllBytes(fullpath, textureCache.EncodeToPNG());
+                        Plugin.Logger.LogInfo("Saved stencil to: " + fullpath);
                     }
                 }
             }
@@ -289,7 +290,7 @@ namespace WikiUtil.BuiltIn
                         flag &= RecursivelyCheckNodes(subnode);
                     }
                 }
-                else if (origVisibility.ContainsKey(node))
+                else if (origVisibility.TryGetValue(node, out bool visible) && visible)
                 {
                     flag &= !node._isMatrixDirty;
                 }
@@ -427,7 +428,7 @@ namespace WikiUtil.BuiltIn
             {
                 UnityEngine.Object.Destroy(textureCache);
             }
-            textureCache = new Texture2D(Mathf.CeilToInt(bounds.width), Mathf.CeilToInt(bounds.height), TextureFormat.ARGB32, false);
+            textureCache = new Texture2D(Math.Max(1, Mathf.CeilToInt(bounds.width)), Math.Max(1, Mathf.CeilToInt(bounds.height)), TextureFormat.ARGB32, false);
 
             int x = Mathf.FloorToInt(bounds.x);
             int y = Futile.screen.pixelHeight - Mathf.FloorToInt(bounds.y) - textureCache.height - 1; // y-axis flipped (origin at bottom left vs top left)
@@ -446,7 +447,7 @@ namespace WikiUtil.BuiltIn
 
         private void CropWhitespace(Texture2D texture)
         {
-            if (texture.width == 0 || texture.height == 0) return;
+            if (texture.width <= 1 || texture.height <= 1) return;
 
             Color[] oldPixels = texture.GetPixels();
             int minX = 0, maxX = texture.width - 1, minY = 0, maxY = texture.height - 1;
@@ -486,10 +487,10 @@ namespace WikiUtil.BuiltIn
                 if (!foundMaxY) maxY--;
             }
 
-            int width = Math.Max(0, maxX - minX + 1);
-            int height = Math.Max(0, maxY - minY + 1);
-
-            if (width < 1 || height < 1) return;
+            int width = Math.Max(1, maxX - minX + 1);
+            int height = Math.Max(1, maxY - minY + 1);
+            minX = Math.Min(minX, texture.width - width);
+            minY = Math.Min(minY, texture.height - height);
 
             Color[] newPixels = texture.GetPixels(minX, minY, width, height);
 

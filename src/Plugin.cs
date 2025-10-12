@@ -12,7 +12,7 @@ using WikiUtil.Remix;
 
 namespace WikiUtil;
 
-[BepInPlugin("alduris.wikiutil", "Wiki Util", "1.1")]
+[BepInPlugin("alduris.wikiutil", "Wiki Util", "1.2")]
 internal class Plugin : BaseUnityPlugin
 {
     public static new ManualLogSource Logger;
@@ -38,6 +38,7 @@ internal class Plugin : BaseUnityPlugin
             ToolDatabase.RegisterTool(new TokenFinderTool());
             ToolDatabase.RegisterTool(new StencilTool());
             ToolDatabase.RegisterTool(new BakedDataTool());
+            ToolDatabase.RegisterTool(new HideMarkTool(), false);
         }
         catch (Exception e)
         {

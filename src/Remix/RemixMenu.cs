@@ -124,6 +124,7 @@ namespace WikiUtil.Remix
                 TokenFinderTool.TOOL_ID,
                 StencilTool.TOOL_ID,
                 BakedDataTool.TOOL_ID,
+                HideMarkTool.TOOL_ID,
             ];
             List<int> validationInts = [];
             for (int i = 0; i < baseModTools.Count; i++)
