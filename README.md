@@ -7,18 +7,18 @@ The mod can be installed through [the Steam Workshop](https://steamcommunity.com
 ## Built-In Tools
 These tools can be enabled/disabled and have their keybinds changed through the mod's options menu. For tools that output files, their output location can also be changed there.
 
-| Tool | Default Keybind | Description |
-| ---- | --------------- | ----------- |
-| Baked Data Visualizer | Ctrl+A | While in a room, toggles a baked data visualizer, cycling between several visualizations including visibility, terrain proximity, and floor altitude. |
-| Complete Pause | Shift+Esc | While held, completely pauses the game. Disabled by default. |
-| Hide Mark | M | Toggles mark/glow visibility. Disabled by default. |
-| Icon Grabber | Ctrl+I | Opens a menu where creature and object icons can be downloaded in the style they appear in on the Rain World wiki. |
-| Object Stencil | Ctrl+B | While in-game, allows selecting individual objects and creatures to export as a transparent screenshot. |
-| Region Creature/Object Scanner | Ctrl+R | Allows scanning regions for their creature/object spawns per-slugcat. Note that this process is not perfect and results should be manually verified afterwards. |
-| Screenshotter | F12 | Takes a screenshot in the game's native resolution. |
-| Song Records Manager | Ctrl+M | While in story mode, opens a menu allowing played songs to be forgotten so their triggers will play them again. Requested by Lolight2. |
-| Text Decryption | Ctrl+D | Opens a menu where text files in the base game and mods can be decrypted, read, and copied to your clipboard. |
-| Token Scanner | Ctrl+T | Allows scanning regions for their tokens, pearls, echoes, and more, per-slugcat. Note that this process is not perfect and results should be manually verified afterwards. |
+| Tool                           | Default Keybind | Description                                                                                                                                                                |
+|--------------------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Baked Data Visualizer          | Ctrl+A          | While in a room, toggles a baked data visualizer, cycling between several visualizations including visibility, terrain proximity, and floor altitude.                      |
+| Complete Pause                 | Shift+Esc       | While held, completely pauses the game. Disabled by default.                                                                                                               |
+| Hide Mark                      | M               | Toggles mark/glow visibility. Disabled by default.                                                                                                                         |
+| Icon Grabber                   | Ctrl+I          | Opens a menu where creature and object icons can be downloaded in the style they appear in on the Rain World wiki.                                                         |
+| Object Stencil                 | Ctrl+B          | While in-game, allows selecting individual objects and creatures to export as a transparent screenshot.                                                                    |
+| Region Creature/Object Scanner | Ctrl+R          | Allows scanning regions for their creature/object spawns per-slugcat. Note that this process is not perfect and results should be manually verified afterwards.            |
+| Screenshotter                  | F12             | Takes a screenshot in the game's native resolution.                                                                                                                        |
+| Song Records Manager           | Ctrl+M          | While in story mode, opens a menu allowing played songs to be forgotten so their triggers will play them again. Requested by Lolight2.                                     |
+| Text Decryption                | Ctrl+D          | Opens a menu where text files in the base game and mods can be decrypted, read, and copied to your clipboard.                                                              |
+| Token Scanner                  | Ctrl+T          | Allows scanning regions for their tokens, pearls, echoes, and more, per-slugcat. Note that this process is not perfect and results should be manually verified afterwards. |
 
 (Table last updated in version 1.2)
 
