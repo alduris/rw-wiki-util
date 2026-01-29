@@ -53,7 +53,7 @@ namespace WikiUtil.BuiltIn
                     sprites.Add(
                         new FSprite("pixel")
                         {
-                            scale = 18f,
+                            scale = 20f,
                             anchorX = 0f,
                             anchorY = 0f,
                             color = new Color(0f, 0f, 0f, 0f)
@@ -80,7 +80,7 @@ namespace WikiUtil.BuiltIn
             {
                 for (int j = 0; j < room.TileHeight; j++)
                 {
-                    sLeaser.sprites[i * room.TileHeight + j].SetPosition(new Vector2(i, j) * 20f + Vector2.one - camPos);
+                    sLeaser.sprites[i * room.TileHeight + j].SetPosition(new Vector2(i, j) * 20f - camPos);
                     sLeaser.sprites[i * room.TileHeight + j].color = GetColor(i, j);
                 }
             }
@@ -146,7 +146,7 @@ namespace WikiUtil.BuiltIn
                     color = max - color - 1;
             }
 
-            return Custom.HSL2RGB(0.667f * (1f - color / max), 1f, 0.5f, 0.4f);
+            return Custom.HSL2RGB(0.667f * (1f - (float)color / max), 1f, 0.5f, 0.4f);
         }
 
         public void NextPhase()
