@@ -243,13 +243,19 @@ namespace WikiUtil.BuiltIn
 
                 if (changed)
                 {
-                    foreach (var s in sLeasersToRemove)
+                    if (sLeasersToRemove != null)
                     {
-                        HideSLeaser(s);
+                        foreach (var s in sLeasersToRemove)
+                        {
+                            HideSLeaser(s);
+                        }
                     }
-                    foreach (var s in sLeasersToAdd)
+                    if (sLeasersToAdd != null)
                     {
-                        RestoreSLeaser(s);
+                        foreach (var s in sLeasersToAdd)
+                        {
+                            RestoreSLeaser(s);
+                        }
                     }
 
                     if (textureCache != null)
