@@ -32,38 +32,60 @@ namespace WikiUtil.BuiltIn
             }
         }
 
-        public bool Pause => toggled;
+        public bool Pause
+        {
+            get
+            {
+                if (tickPlay)
+                {
+                    tickPlay = false;
+                    return false;
+                }
+                return toggled;
+            }
+        }
 
         private const float leftWidth = 250f;
         private const float rightWidth = 500f;
-        private const float contentHeight = 500f;
+        private const float contentHeight = 600f;
         private const float contentMargin = 10f;
+        private const float filterListHeight = contentHeight * 0.35f - contentMargin * 0.5f;
+        private const float toggleListHeight = contentHeight - contentMargin - filterListHeight;
         public override Rect WindowSize { get; set; } = new Rect(100f, 100f, leftWidth + rightWidth + contentMargin * 3, 20f + contentHeight);
 
         private readonly Dictionary<FNode, bool> origVisibility = [];
         private readonly HashSet<RoomCamera.SpriteLeaser> currentSLeasers = [];
+        private readonly Dictionary<Type, bool> sLeaserTypeToggle = [];
+        private readonly List<Type> sortedSLeaserTypes = [];
         private Color oldCamColor = Color.black;
         private Texture2D textureCache = null;
 
         private Camera camera;
         private RenderTexture outputTex;
+        private bool tickPlay = false;
 
         public override void ToggleOn(RainWorld rainWorld)
         {
-            currentSLeasers.Clear();
-            origVisibility.Clear();
-            RecursivelySetUpNodes(Futile.stage);
-            oldCamColor = Futile.instance.camera.backgroundColor;
-            Futile.instance.camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
-
-            if (camera != null)
+            if (rainWorld.processManager.currentMainLoop is RainWorldGame game)
             {
-                Object.Destroy(camera.gameObject);
-            }
+                currentSLeasers.Clear();
+                origVisibility.Clear();
+                sLeaserTypeToggle.Clear();
+                sortedSLeaserTypes.Clear();
+                RecursivelySetUpNodes(Futile.stage);
+                SetUpSLeaserTypes(game.cameras[0]);
+                oldCamColor = Futile.instance.camera.backgroundColor;
+                Futile.instance.camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
 
-            var go = new GameObject("StencilTool Camera");
-            camera = go.AddComponent<Camera>();
-            UpdateCamera(Vector2.zero, Vector2.one);
+                if (camera != null)
+                {
+                    Object.Destroy(camera.gameObject);
+                }
+
+                var go = new GameObject("StencilTool Camera");
+                camera = go.AddComponent<Camera>();
+                UpdateCamera(Vector2.zero, Vector2.one);
+            }
         }
 
         private void RecursivelySetUpNodes(FNode node)
@@ -82,6 +104,20 @@ namespace WikiUtil.BuiltIn
             }
         }
 
+        private void SetUpSLeaserTypes(RoomCamera rCam)
+        {
+            foreach (var sLeaser in rCam.spriteLeasers)
+            {
+                var type = sLeaser.drawableObject.GetType();
+                if (!sLeaserTypeToggle.ContainsKey(type))
+                {
+                    sLeaserTypeToggle.Add(type, true);
+                    sortedSLeaserTypes.Add(type);
+                }
+            }
+            sortedSLeaserTypes.Sort(new TypeComparer());
+        }
+
         public override void ToggleOff(RainWorld rainWorld)
         {
             foreach (var (node, visibility) in origVisibility)
@@ -90,9 +126,11 @@ namespace WikiUtil.BuiltIn
             }
             origVisibility.Clear();
             currentSLeasers.Clear();
+            sLeaserTypeToggle.Clear();
+            sortedSLeaserTypes.Clear();
             Futile.instance.camera.backgroundColor = oldCamColor;
 
-            Object.Destroy(camera.gameObject);
+            Object.Destroy(camera?.gameObject);
             Object.Destroy(outputTex);
             camera = null;
             outputTex?.Release();
@@ -125,6 +163,7 @@ namespace WikiUtil.BuiltIn
             Plugin.Logger.LogDebug($"UPDATING CAMERA: pos={center}, size={size}, origSize={origSize}");
         }
 
+        private Vector2 typeListScroll;
         private Vector2 sLeaserListScroll;
 
         public override void OnGUI(RainWorld rainWorld)
@@ -142,9 +181,44 @@ namespace WikiUtil.BuiltIn
                 List<RoomCamera.SpriteLeaser> sLeasersToAdd = null;
                 List<RoomCamera.SpriteLeaser> sLeasersToRemove = null;
 
-                var sLeasers = game.cameras[0].spriteLeasers;
-                sLeaserListScroll = GUI.BeginScrollView(new Rect(contentMargin, 20f, leftWidth, contentHeight), sLeaserListScroll, new Rect(0f, 0f, leftWidth - 20f, 24f * (sLeasers.Count + 1)));
-                GUI.Label(new Rect(0f, 0f, leftWidth - 20f, 24f), "Note: objects must be in camera view.");
+                var types = sortedSLeaserTypes;
+                typeListScroll = GUI.BeginScrollView(new Rect(contentMargin, 20f, leftWidth, filterListHeight), typeListScroll, new Rect(0f, 0f, leftWidth - 20f, 24f * (types.Count + 2)));
+                GUI.Label(new Rect(0f, 0f, leftWidth - 20f, 24f), "Filter types here");
+                if (GUI.Button(new Rect(0f, 24f, leftWidth - 20f, 24f), "Deselect all"))
+                {
+                    sLeasersToRemove ??= [];
+                    sLeasersToRemove.AddRange(currentSLeasers);
+                    changed = true;
+                    foreach (var type in sortedSLeaserTypes)
+                    {
+                        sLeaserTypeToggle[type] = false;
+                    }
+                }
+                for (int i = 0; i < types.Count; i++)
+                {
+                    bool isSelected = sLeaserTypeToggle[sortedSLeaserTypes[i]];
+                    bool newSelect;
+                    if ((newSelect = GUI.Toggle(new Rect(0f, 24f * (i + 2), leftWidth - 20f, 24f), sLeaserTypeToggle[sortedSLeaserTypes[i]], sortedSLeaserTypes[i].Name)) != isSelected)
+                    {
+                        sLeaserTypeToggle[sortedSLeaserTypes[i]] = newSelect;
+                        sLeasersToRemove ??= [];
+                        var toRemove = currentSLeasers.Where(x => x.drawableObject.GetType().Equals(sortedSLeaserTypes[i])).ToList();
+                        if (toRemove.Any())
+                        {
+                            foreach (var x in toRemove)
+                            {
+                                currentSLeasers.Remove(x);
+                                sLeasersToRemove.Add(x);
+                            }
+                            changed = true;
+                        }
+                    }
+                }
+                GUI.EndScrollView();
+
+                var sLeasers = game.cameras[0].spriteLeasers.Where(x => sLeaserTypeToggle[x.drawableObject.GetType()]).ToList();
+                sLeaserListScroll = GUI.BeginScrollView(new Rect(contentMargin, 20f + contentHeight - toggleListHeight, leftWidth, toggleListHeight), sLeaserListScroll, new Rect(0f, 0f, leftWidth - 20f, 24f * (sLeasers.Count + 1)));
+                GUI.Label(new Rect(0f, 0f, leftWidth - 20f, 24f), "Toggle individual SpriteLeasers here");
                 for (int i = 0; i < sLeasers.Count; i++)
                 {
                     bool isSelected = currentSLeasers.Contains(sLeasers[i]);
@@ -559,10 +633,12 @@ namespace WikiUtil.BuiltIn
             int PosToIndex(int x, int y) => x + y * texture.width;
         }
 
-        private struct GraphicsInfo
+        private class TypeComparer : IComparer<Type>
         {
-            public bool visible;
-            public int layer;
+            public int Compare(Type x, Type y)
+            {
+                return StringComparer.OrdinalIgnoreCase.Compare(x.Name, y.Name);
+            }
         }
     }
 }
