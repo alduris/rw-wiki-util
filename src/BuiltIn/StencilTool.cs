@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using WikiUtil.Tools;
+using Object = UnityEngine.Object;
 
 namespace WikiUtil.BuiltIn
 {
@@ -44,6 +45,9 @@ namespace WikiUtil.BuiltIn
         private Color oldCamColor = Color.black;
         private Texture2D textureCache = null;
 
+        private Camera camera;
+        private RenderTexture outputTex;
+
         public override void ToggleOn(RainWorld rainWorld)
         {
             currentSLeasers.Clear();
@@ -51,6 +55,15 @@ namespace WikiUtil.BuiltIn
             RecursivelySetUpNodes(Futile.stage);
             oldCamColor = Futile.instance.camera.backgroundColor;
             Futile.instance.camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+
+            if (camera != null)
+            {
+                Object.Destroy(camera.gameObject);
+            }
+
+            var go = new GameObject("StencilTool Camera");
+            camera = go.AddComponent<Camera>();
+            UpdateCamera(Vector2.zero, Vector2.one);
         }
 
         private void RecursivelySetUpNodes(FNode node)
@@ -78,6 +91,38 @@ namespace WikiUtil.BuiltIn
             origVisibility.Clear();
             currentSLeasers.Clear();
             Futile.instance.camera.backgroundColor = oldCamColor;
+
+            Object.Destroy(camera.gameObject);
+            Object.Destroy(outputTex);
+            camera = null;
+            outputTex?.Release();
+            outputTex = null;
+        }
+
+        private void UpdateCamera(Vector2 center, Vector2 size)
+        {
+            var origSize = size;
+            size = new Vector2(Mathf.Clamp(size.x, 1f, 16384f), Mathf.Clamp(size.y, 1f, 16384f));
+            camera.aspect = size.x / size.y;
+            camera.orthographic = true;
+            camera.orthographicSize = size.y / 2f;
+            camera.nearClipPlane = 1f;
+            camera.farClipPlane = 100f;
+            camera.gameObject.transform.position = new Vector3(center.x, center.y, -50f);
+            camera.depth = -1000f;
+            if (outputTex == null || outputTex.width != Mathf.CeilToInt(size.x) || outputTex.height != Mathf.CeilToInt(size.y))
+            {
+                outputTex?.Release();
+                outputTex = new RenderTexture(Mathf.CeilToInt(size.x), Mathf.CeilToInt(size.y), 8)
+                {
+                    filterMode = FilterMode.Point
+                };
+                camera.targetTexture = outputTex;
+            }
+            camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            //camera.cullingMask = CULLING_MASK;
+            camera.enabled = true;
+            Plugin.Logger.LogDebug($"UPDATING CAMERA: pos={center}, size={size}, origSize={origSize}");
         }
 
         private Vector2 sLeaserListScroll;
@@ -89,7 +134,7 @@ namespace WikiUtil.BuiltIn
                 // Update cache maybe, hopefully by now it has been updated
                 if (textureCache == null && currentSLeasers.Count > 0 && currentSLeasers.All(NoMeshesDirty))
                 {
-                    CreateTextureCache();
+                    UpdateTexture();
                 }
 
                 // Left side: list of sleasers, toggleable
@@ -135,7 +180,7 @@ namespace WikiUtil.BuiltIn
 
                     if (textureCache != null)
                     {
-                        UnityEngine.Object.Destroy(textureCache);
+                        Object.Destroy(textureCache);
                         textureCache = null;
                     }
                 }
@@ -147,18 +192,18 @@ namespace WikiUtil.BuiltIn
                     const float textureAreaHeight = contentHeight - contentMargin - 24f;
                     GUI.Label(
                         new Rect(
-                            rightStartX + rightWidth / 2f - textureCache.width / 2f,
-                            20f + textureAreaHeight / 2f - textureCache.height / 2f,
-                            Mathf.Min(rightWidth, textureCache.width),
-                            Mathf.Min(textureAreaHeight, textureCache.height)
+                            rightStartX + rightWidth / 2f,
+                            20f + textureAreaHeight / 2f,
+                            Mathf.Min(rightWidth, outputTex.width),
+                            Mathf.Min(textureAreaHeight, outputTex.height)
                         ),
-                        textureCache
+                        outputTex
                     );
 
                     if (GUI.Button(new Rect(rightStartX, 20f + contentHeight - 24f - contentMargin, rightWidth, 24f), "Download"))
                     {
                         const string FOLDER_NAME = "stencil";
-                        const int NAME_CAP = 240;
+                        int nameCap = 240 - ToolDatabase.GetPathTo(FOLDER_NAME).Length;
                         string fileName;
                         if (currentSLeasers.Count == 1)
                         {
@@ -168,17 +213,18 @@ namespace WikiUtil.BuiltIn
                         {
                             fileName = string.Join("_", currentSLeasers.OrderBy(x => x.drawableObject.GetType().Name, StringComparer.OrdinalIgnoreCase).Select(x => x.drawableObject.GetType().Name));
                         }
-                        if (fileName.Length > NAME_CAP)
+                        if (fileName.Length > nameCap)
                         {
-                            fileName = fileName.Substring(0, NAME_CAP);
+                            fileName = fileName.Substring(0, nameCap);
                         }
                         string fullpath = ToolDatabase.GetPathTo(FOLDER_NAME, fileName + ".png");
                         int i = 2;
-                        while (File.Exists(fullpath))
+                        while (File.Exists(fullpath) && i < 1000)
                         {
                             fullpath = ToolDatabase.GetPathTo(FOLDER_NAME, $"{fileName}-{i}.png");
                             i++;
                         }
+                        UpdateTexture();
                         File.WriteAllBytes(fullpath, textureCache.EncodeToPNG());
                         Plugin.Logger.LogInfo("Saved stencil to: " + fullpath);
                     }
@@ -364,17 +410,17 @@ namespace WikiUtil.BuiltIn
 
             if (minX == float.PositiveInfinity) return Rect.zero;
 
-            minX = Mathf.Max(0, minX);
+            /*minX = Mathf.Max(0, minX);
             minY = Mathf.Max(0, minY);
             maxX = Mathf.Min(Futile.screen.pixelWidth, maxX);
-            maxY = Mathf.Min(Futile.screen.pixelHeight, maxY);
+            maxY = Mathf.Min(Futile.screen.pixelHeight, maxY);*/
 
             return new Rect(minX, minY, maxX - minX, maxY - minY);
 
             IEnumerable<Vector2> GetMeshVertsFor(FNode node)
             {
                 // Disregard invisible items
-                if (!node.isVisible || !node._isOnStage) yield break;
+                if (!node.isVisible || !node._isOnStage || node.x == -10000f || node.y == -10000f) yield break;
 
                 if (node is FContainer container)
                 {
@@ -420,11 +466,24 @@ namespace WikiUtil.BuiltIn
             }
         }
 
-        private void CreateTextureCache()
+        private void UpdateTexture()
         {
             var bounds = DetermineMeshBounds();
+            UpdateCamera(bounds.position + bounds.size / 2f, bounds.size);
 
-            if (textureCache != null)
+            if (textureCache == null || textureCache.width != outputTex.width || textureCache.height != outputTex.height)
+            {
+                if (textureCache != null) Object.Destroy(textureCache);
+                textureCache = new Texture2D(outputTex.width, outputTex.height, TextureFormat.ARGB32, false);
+            }
+            var oldRT = RenderTexture.active;
+            RenderTexture.active = outputTex;
+            textureCache.ReadPixels(new Rect(0, 0, outputTex.width, outputTex.height), 0, 0);
+            RenderTexture.active = oldRT;
+            CropWhitespace(textureCache);
+            textureCache.Apply();
+
+            /*if (textureCache != null)
             {
                 UnityEngine.Object.Destroy(textureCache);
             }
@@ -442,12 +501,12 @@ namespace WikiUtil.BuiltIn
             RenderTexture.active = oldRT;
 
             CropWhitespace(textureCache);
-            textureCache.Apply();
+            textureCache.Apply();*/
         }
 
         private void CropWhitespace(Texture2D texture)
         {
-            if (texture.width <= 1 || texture.height <= 1) return;
+            if (texture.width <= 1 && texture.height <= 1) return;
 
             Color[] oldPixels = texture.GetPixels();
             int minX = 0, maxX = texture.width - 1, minY = 0, maxY = texture.height - 1;
@@ -498,6 +557,12 @@ namespace WikiUtil.BuiltIn
             texture.SetPixels(newPixels);
 
             int PosToIndex(int x, int y) => x + y * texture.width;
+        }
+
+        private struct GraphicsInfo
+        {
+            public bool visible;
+            public int layer;
         }
     }
 }
